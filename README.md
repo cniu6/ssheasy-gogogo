@@ -9,6 +9,26 @@ Source repositorty of the online ssh, sftp client [ssheasy.com](https://ssheasy.
 This will compile the wasm ssh, sftp client, the proxy component that proxies tcp connections for the client running in the browser through websocket and sets up nginx server serving the web frontend.
 Additionaly prometheus and grafana is set up as well to monitor the connections proxied. An sshd is also started in a container for testing.
 
+### connect endpoint
+
+Use `/connect?host=HOST&port=PORT&user=USER&password=PASSWORD` for initiating connection right away after opening the url.
+
+
+| Parameter      | Description                                 | Default Value |
+|----------------|---------------------------------------------|--------------|
+| `host`         | SSH server hostname or IP address           | –            |
+| `port`         | SSH server port                             | 22           |
+| `user`         | SSH username                                | –            |
+| `password`     | SSH password                                | –            |
+| `pk`           | Private key (as string, for key auth)       | –            |
+| `webauthnKey`  | WebAuthn key ID (for WebAuthn auth)         | -1           |
+| `connect`      | Whether to auto-connect (`"true"`/`"false"`) | "true"      |
+
+*Notes:*
+- `host` is mandatory if `connect` is `"true"` (or not provided).
+- If `connect` is `"false"`, the connection will not auto-initiate, but the provided connection data will be filled in the connection form.
+
+
 ## Testing
 
 For testing docker-compose sets up an sshd in a separate container. After starting up the stack with `docker-compose up` open http://localhost:8080 in your browser and use the host testssh with user root and password root.
