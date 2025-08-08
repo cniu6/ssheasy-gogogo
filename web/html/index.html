@@ -37,6 +37,7 @@ var mod = fetchAndInstantiate("/main.wasm", go.importObject);
 window.onload = function() {
   mod.then(function(instance) {
     go.run(instance);
+    handleConnectFromQuery();
   });
   notReady = function() {
     return  $("portInp").val() == "" || $('#hostInp').val() == "" || $('#usrInp').val() == "" ||
@@ -186,6 +187,52 @@ window.onload = function() {
       updateFileBrowserVisibility(true);
     } else {
       updateFileBrowserVisibility(false);
+    }
+    if (typeof term !== 'undefined' && term) {
+      term.focus();
+    }
+  }
+
+  function handleConnectFromQuery() {
+    const url = new URL(window.location.href);
+    if (url.pathname === "/connect") {
+      const params = url.searchParams;
+      const host = params.get("host");
+      const port = params.get("port") || 22;
+      const user = params.get("user");
+      const password = params.get("password");
+      // Optionally support pk and webauthnKey as well
+      const pk = params.get("pk") || "";
+      const webauthnKey = params.get("webauthnKey") || -1;
+      const doConnect = params.get("connect")  || "true";
+
+      if (host) $('#hostInp').val(host);
+      if (port) $('#portInp').val(port);
+      if (user) $('#usrInp').val(user);
+      if (password) $('#passInp').val(password);
+      if (pk) $('#pkInp').val(pk);
+      if (webauthnKey != -1) $('#webauthnKeySelect').val(webauthnKey);
+
+      if (host && port && doConnect === "true") {
+        showMsg('Connecting...');
+        $('#conBtn').prop('disabled', true);
+        initConnection(
+          term.rows,
+          term.cols,
+          host,
+          Number(port),
+          user,
+          password,
+          pk,
+          $('#bypassProxyInp').is(':checked'),
+          false,
+          webauthnKey != -1
+        );
+      } else {
+        if(doConnect == "true") {
+          showErr("Missing required connection parameters in URL.");
+        }
+      }
     }
   }
 
