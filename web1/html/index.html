@@ -674,7 +674,7 @@ li button {
         <div  class="container col-8 align-self-center" > 
           <div class="row" >
             <input id="usrInp" type="text" placeholder="User" class="form-control col-3" value="root">
-            <input id="hostInp" type="text" placeholder="Host to Connect" class="form-control col-5" value="testssh">
+            <input id="hostInp" type="text" placeholder="Host to Connect" class="form-control col-5" value="">
             <input id="portInp" type="number" placeholder="Port" class="form-control col-2" value="22">
             <div class="col-2">
               <label title="If checked then connection is not proxied through the websocket proxy of ssheasy, but it goes directly to the provided host and port. On the provided addrees a websocket proxy is expected to listen. Useful if you have your own proxy setup (like websockify or something similar).">
@@ -774,7 +774,7 @@ li button {
         term.write('After successfully connecting you can just type your command into this Xterm.js console or browse/manage your files in the filemanager opens below the console.');
         term.write('\n\r');
         term.write('\n\r');
-        term.write('Source code available on github: https://github.com/hullarb/ssheasy');
+        term.write('Source code available on github: https://github.com/cniu6/ssheasy-gogogo');
         term.write('\n\r');
         fitAddon.fit();
         const resizeObserver = new ResizeObserver((entries) => {

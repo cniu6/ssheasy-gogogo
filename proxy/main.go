@@ -61,7 +61,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if auditLogFile != nil {
+	if *auditLogFile != "" {
 		var err error
 		auditLog, err = os.OpenFile(*auditLogFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
@@ -93,6 +93,9 @@ func main() {
 		fileServer.ServeHTTP(w, r)
 	})
 	r.PathPrefix("/cl/").Handler(http.StripPrefix("/cl", cacheHandler))
+	r.HandleFunc("/cl", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/cl/", http.StatusMovedPermanently)
+	})
 
 	srv := http.Server{
 		Addr:    *publicAddr,
