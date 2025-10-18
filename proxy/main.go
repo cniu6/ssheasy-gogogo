@@ -3,15 +3,18 @@ package main
 import (
 	"bytes"
 	"context"
+	"embed"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -19,18 +22,41 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/websocket"
 	"golang.org/x/time/rate"
 )
 
+//go:embed html
+var embeddedFiles embed.FS
+
+// 全局配置
+var (
+	debugMode     bool
+	auditLog      *os.File
+	auditLogMutex sync.Mutex
+)
+
 func main() {
-	publicAddr := flag.String("pub", ":5555", "listener address")
-	adminAddr := flag.String("priv", ":6666", "admin listener address")
-	adminKey := flag.String("adm-key", "qtIazZDhzrYERShXuYpqRx", "admin api key")
-	auditLogFile := flag.String("al", "connections.log", "log file to store connection request, if empty connection logging is disabled")
+	// 从环境变量读取配置
+	debugMode = getEnvBool("DEBUG", false)
+
+	publicAddr := flag.String("pub", getEnvString("PUBLIC_ADDR", ":5555"), "listener address")
+	port := flag.Int("port", getEnvInt("PORT", 5555), "listener port (shorthand for -pub)")
+	auditLogFile := flag.String("al", getEnvString("AUDIT_LOG_FILE", "connections.log"), "log file to store connection request, if empty connection logging is disabled")
+	debugFlag := flag.Bool("debug", false, "enable debug mode for detailed logging")
 	flag.Parse()
-	if *publicAddr == "" || *adminAddr == "" {
+
+	// 处理debug参数
+	if *debugFlag {
+		debugMode = true
+	}
+
+	// 如果指定了port参数，优先使用
+	if *port != 5555 {
+		*publicAddr = fmt.Sprintf(":%d", *port)
+	}
+
+	if *publicAddr == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -48,12 +74,25 @@ func main() {
 		Handler:   handleWss,
 	}
 
-	startAdmin(*adminAddr, *adminKey)
 	r := mux.NewRouter()
 	r.Handle("/ws", wmux)
-	// http.Handle("/cl/", http.StripPrefix("/cl", http.FileServer(http.Dir("./html"))))
-	// r.PathPrefix("/cl/").Handler(http.StripPrefix("/cl", http.FileServer(http.Dir("./html"))))
-	r.PathPrefix("/cl/").Handler(http.StripPrefix("/cl", FileServer(Dir("./html"))))
+
+	// 使用内嵌的文件系统
+	htmlFS, err := fs.Sub(embeddedFiles, "html")
+	if err != nil {
+		log.Fatalf("failed to get embedded files: %v", err)
+	}
+	// 创建带缓存控制的文件服务器
+	fileServer := http.FileServer(http.FS(htmlFS))
+	cacheHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 为静态资源添加缓存头
+		if isStaticAsset(r.URL.Path) {
+			w.Header().Set("Cache-Control", "public, max-age=3600") // 缓存1小时
+			w.Header().Set("Expires", time.Now().Add(time.Hour).Format(http.TimeFormat))
+		}
+		fileServer.ServeHTTP(w, r)
+	})
+	r.PathPrefix("/cl/").Handler(http.StripPrefix("/cl", cacheHandler))
 
 	srv := http.Server{
 		Addr:    *publicAddr,
@@ -72,6 +111,11 @@ func main() {
 	}()
 
 	log.Printf("server starts on: %s", *publicAddr)
+	if debugMode {
+		log.Printf("debug mode enabled")
+	} else {
+		log.Printf("debug mode disabled")
+	}
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatalf("HTTP server ListenAndServe: %v", err)
 	}
@@ -94,14 +138,21 @@ func main() {
 
 var activeWebsocks int64
 
+// isStaticAsset 判断是否为静态资源文件
+func isStaticAsset(path string) bool {
+	extensions := []string{".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".ico", ".svg", ".woff", ".woff2", ".ttf", ".eot", ".wasm"}
+	for _, ext := range extensions {
+		if strings.HasSuffix(strings.ToLower(path), ext) {
+			return true
+		}
+	}
+	return false
+}
+
 func handleWss(wsconn *websocket.Conn) {
-	var ac prometheus.Gauge
 	defer func() {
 		atomic.AddInt64(&activeWebsocks, -1)
 		wsconn.Close()
-		if ac != nil {
-			ac.Dec()
-		}
 	}()
 	atomic.AddInt64(&activeWebsocks, 1)
 	id := wsconn.Config().Header.Get(reqIDHdr)
@@ -113,7 +164,6 @@ func handleWss(wsconn *websocket.Conn) {
 		return
 	}
 	l.logf("handlewss from %v", ips)
-	totalConnectionRequests.WithLabelValues(svcHost).Inc()
 	err := wsconn.SetReadDeadline(time.Now().Add(2 * time.Second))
 	if err != nil {
 		log.Printf("failed to set red deadline: %v", err)
@@ -173,9 +223,6 @@ func handleWss(wsconn *websocket.Conn) {
 			l.logf("failed to write status: %v", err)
 		}
 	}
-	totalConnections.WithLabelValues(svcHost).Inc()
-	ac = activeConnections.WithLabelValues(svcHost)
-	ac.Inc()
 	writeAuditLog(ips[0], cr.Host, cr.Port, "connection established")
 	wsconn.PayloadType = websocket.BinaryFrame
 
@@ -194,18 +241,12 @@ func handleWss(wsconn *websocket.Conn) {
 	stats := make(chan conStat)
 
 	go func() {
-		n, err := io.Copy(&meteredWriter{
-			w: cw,
-			c: totalBytes.WithLabelValues(svcHost, "up"),
-		}, wsconn)
+		n, err := io.Copy(cw, wsconn)
 		conn.Close()
 		stats <- conStat{"up", err, n}
 	}()
 	go func() {
-		n, err := io.Copy(&meteredWriter{
-			w: wsw,
-			c: totalBytes.WithLabelValues(svcHost, "down"),
-		}, conn)
+		n, err := io.Copy(wsw, conn)
 		wsconn.Close()
 		stats <- conStat{"down", err, n}
 	}()
@@ -222,12 +263,12 @@ func handleWss(wsconn *websocket.Conn) {
 	close(done)
 }
 
-var auditLog io.Writer
-
 func writeAuditLog(srcIP, dstIP string, dstPort int, msg string) {
 	if auditLog == nil {
 		return
 	}
+	auditLogMutex.Lock()
+	defer auditLogMutex.Unlock()
 	_, err := auditLog.Write([]byte(fmt.Sprintf("%s,%s,%s,%d,%s\n", time.Now().UTC().Format(time.RFC3339Nano), srcIP, dstIP, dstPort, msg)))
 	if err != nil {
 		log.Printf("failed to write into connection log: %v", err)
@@ -356,21 +397,12 @@ func (w *limitedWriter) Write(b []byte) (n int, err error) {
 	return w.w.Write(b)
 }
 
-type meteredWriter struct {
-	w io.Writer
-	c prometheus.Counter
-}
-
-func (w *meteredWriter) Write(b []byte) (n int, err error) {
-	n, err = w.w.Write(b)
-	w.c.Add(float64(n))
-	return n, err
-}
-
 type logger string
 
 func (l logger) logf(fmt string, args ...interface{}) {
-	log.Printf(string(l)+fmt, args...)
+	if debugMode {
+		log.Printf(string(l)+fmt, args...)
+	}
 }
 
 func newLogger() logger {
@@ -383,5 +415,37 @@ func newLogger() logger {
 }
 
 func logFromID(id string) logger {
-	return logger(id[:8] + " ")
+	if len(id) == 0 {
+		return logger("unknown ")
+	}
+	if len(id) >= 8 {
+		return logger(id[:8] + " ")
+	}
+	return logger(id + " ")
+}
+
+// 环境变量读取函数
+func getEnvString(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func getEnvInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
+}
+
+func getEnvBool(key string, defaultValue bool) bool {
+	if value := os.Getenv(key); value != "" {
+		if boolValue, err := strconv.ParseBool(value); err == nil {
+			return boolValue
+		}
+	}
+	return defaultValue
 }

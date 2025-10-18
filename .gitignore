@@ -1,2 +1,9 @@
 grafana/data/
 prometheus/data/
+web/html/main.wasm
+web/html/wasm_exec.js
+proxy/html/
+proxy/ssheasy
+proxy/ssheasy.exe
+*.exe
+connections.log

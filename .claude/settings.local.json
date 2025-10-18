@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b \"C:\\Users\\Administrator\\Desktop\\codingfile\\闲机\\webssh\\ssheasy-gogogo\")",
+      "Bash(findstr /i \"\\.go$\")",
+      "Bash(mkdir -p assets/css assets/js)",
+      "Bash(powershell -Command \"New-Item -ItemType Directory -Force -Path assets/css,assets/js\")",
+      "Bash(powershell -Command \"\nInvoke-WebRequest -Uri ''https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css'' -OutFile ''assets/css/bootstrap.min.css''\nInvoke-WebRequest -Uri ''https://code.jquery.com/jquery-3.3.1.slim.min.js'' -OutFile ''assets/js/jquery-3.3.1.slim.min.js''\nInvoke-WebRequest -Uri ''https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js'' -OutFile ''assets/js/popper.min.js''\nInvoke-WebRequest -Uri ''https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js'' -OutFile ''assets/js/bootstrap.min.js''\n\")",
+      "Bash(chmod +x \"C:\\Users\\Administrator\\Desktop\\codingfile\\闲机\\webssh\\ssheasy-gogogo\\build.sh\")",
+      "Bash(go mod tidy)",
+      "Bash(./ssheasy.exe -h)",
+      "Bash(build.bat)",
+      "Bash(cmd /c build.bat)",
+      "Bash(powershell -Command \"echo ''n'' | & .\\build.bat 2>&1\")",
+      "Bash(powershell -Command \"Test-Path ''C:\\Program Files\\Go\\misc\\wasm\\wasm_exec.js''\")",
+      "Bash(test -f \"C:\\Users\\Administrator\\Desktop\\codingfile\\闲机\\webssh\\ssheasy-gogogo\\web\\html\\wasm_exec.js\")",
+      "Bash(powershell -Command \"echo ''n'' | & .\\build.bat 2>&1 | Select-String -Pattern ''\\['', ''编译'', ''错误'', ''成功'', ''完成'' | Select-Object -First 30\")",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(powershell -Command \"Get-ChildItem ''C:\\Program Files\\Go'' -Recurse -Filter ''wasm_exec.js'' -ErrorAction SilentlyContinue | Select-Object -First 1 FullName\")",
+      "Bash(timeout 120 powershell -Command \"$ErrorActionPreference=''''Continue''''; echo ''''n'''' | & .\\build.bat 2>&1\")",
+      "Bash(powershell -Command \"Get-Item ssheasy.exe | Select-Object Name, @{Name=''Size(MB)'';Expression={[math]::Round($_.Length/1MB,2)}}\")",
+      "Bash(timeout 180 powershell -Command \"echo ''''n'''' | & .\\build.bat -p linux 2>&1\")",
+      "Bash(powershell -Command \"Get-Content ssheasy.exe -Encoding Byte -TotalCount 4 | ForEach-Object { ''{0:X2}'' -f $_ }\")",
+      "Bash(powershell -Command \"echo ''''n'''' | & .\\build.bat 2>&1\")",
+      "Bash(powershell -Command \".\\ssheasy.exe -h 2>&1\")",
+      "Bash(powershell -Command \"Get-Content build.bat -Encoding Byte -TotalCount 10 | ForEach-Object { ''{0:X2}'' -f $_}\")",
+      "Bash(cmd /c build.bat windows)",
+      "Bash(del \"C:\\Users\\Administrator\\Desktop\\codingfile\\闲机\\webssh\\ssheasy-gogogo\\build.ps1\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

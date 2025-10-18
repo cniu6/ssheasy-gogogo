@@ -2,7 +2,23 @@
 
 Source repositorty of the online ssh, sftp client [ssheasy.com](https://ssheasy.com)
 
+**[中文文档 / Chinese Documentation](README_CN.md)**
+
 ## Building, running locally
+
+### Quick Start (Standalone Binary)
+
+Build and run the standalone executable:
+
+```bash
+cd proxy
+go build -o ssheasy
+./ssheasy -port 8080
+```
+
+Then open `http://localhost:8080/cl/` in your browser.
+
+### Full Development Environment
 
 `docker-compose up`
 
@@ -32,6 +48,21 @@ Use `/connect?host=HOST&port=PORT&user=USER&password=PASSWORD` for initiating co
 ## Testing
 
 For testing docker-compose sets up an sshd in a separate container. After starting up the stack with `docker-compose up` open http://localhost:8080 in your browser and use the host testssh with user root and password root.
+
+## Command Line Options
+
+The standalone binary supports the following options:
+
+- `-port <number>` - Set listening port (default: 5555)
+- `-pub <address>` - Set public listener address (default: ":5555")
+- `-priv <address>` - Set admin listener address (default: ":6666")
+- `-adm-key <key>` - Set admin API key
+- `-al <file>` - Set audit log file (default: "connections.log")
+
+Example:
+```bash
+./ssheasy -port 8080
+```
 
 ### Testing Webauthn
 
