@@ -89,8 +89,10 @@ func main() {
 
 		// 为静态资源添加缓存头
 		if isStaticAsset(path) {
-			w.Header().Set("Cache-Control", "public, max-age=3600") // 缓存1小时
-			w.Header().Set("Expires", time.Now().Add(time.Hour).Format(http.TimeFormat))
+			// WASM 文件使用更长的缓存时间（24小时）
+			w.Header().Set("Cache-Control", "public, max-age=86400") // 缓存24小时
+			w.Header().Set("Expires", time.Now().Add(24*time.Hour).Format(http.TimeFormat))
+
 		}
 
 		// 尝试打开请求的文件
