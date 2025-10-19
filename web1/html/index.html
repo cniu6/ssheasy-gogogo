@@ -196,7 +196,11 @@ window.onload = function() {
 
   function handleConnectFromQuery() {
     const url = new URL(window.location.href);
-    if (url.pathname === "/connect") {
+    // 支持 /cl/connect 和 /connect 路径
+    const pathname = url.pathname;
+    const isConnectPath = pathname === "/connect" || pathname === "/cl/connect" || pathname.endsWith("/connect");
+
+    if (isConnectPath || url.search) {  // 如果有查询参数，也尝试处理
       const params = url.searchParams;
       const host = params.get("host");
       const port = params.get("port") || 22;
@@ -230,7 +234,7 @@ window.onload = function() {
           webauthnKey != -1
         );
       } else {
-        if(doConnect == "true") {
+        if(doConnect == "true" && host) {
           showErr("URL 中缺少必需的连接参数。");
         }
       }

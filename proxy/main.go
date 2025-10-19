@@ -82,17 +82,46 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get embedded files: %v", err)
 	}
-	// 创建带缓存控制的文件服务器
-	fileServer := http.FileServer(http.FS(htmlFS))
-	cacheHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	// 创建 SPA 路由处理器 - 对于不存在的文件返回 index.html
+	spaHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+
 		// 为静态资源添加缓存头
-		if isStaticAsset(r.URL.Path) {
+		if isStaticAsset(path) {
 			w.Header().Set("Cache-Control", "public, max-age=3600") // 缓存1小时
 			w.Header().Set("Expires", time.Now().Add(time.Hour).Format(http.TimeFormat))
 		}
+
+		// 尝试打开请求的文件
+		f, err := htmlFS.Open(strings.TrimPrefix(path, "/"))
+		if err != nil {
+			// 文件不存在，返回 index.html (用于 SPA 路由)
+			indexFile, err := htmlFS.Open("index.html")
+			if err != nil {
+				http.Error(w, "index.html not found", http.StatusNotFound)
+				return
+			}
+			defer indexFile.Close()
+
+			stat, err := indexFile.Stat()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			http.ServeContent(w, r, "index.html", stat.ModTime(), indexFile.(io.ReadSeeker))
+			return
+		}
+		defer f.Close()
+
+		// 文件存在，正常提供服务
+		fileServer := http.FileServer(http.FS(htmlFS))
 		fileServer.ServeHTTP(w, r)
 	})
-	r.PathPrefix("/cl/").Handler(http.StripPrefix("/cl", cacheHandler))
+
+	r.PathPrefix("/cl/").Handler(http.StripPrefix("/cl", spaHandler))
 	r.HandleFunc("/cl", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/cl/", http.StatusMovedPermanently)
 	})

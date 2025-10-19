@@ -25,7 +25,10 @@
       "Bash(powershell -Command \".\\ssheasy.exe -h 2>&1\")",
       "Bash(powershell -Command \"Get-Content build.bat -Encoding Byte -TotalCount 10 | ForEach-Object { ''{0:X2}'' -f $_}\")",
       "Bash(cmd /c build.bat windows)",
-      "Bash(del \"C:\\Users\\Administrator\\Desktop\\codingfile\\闲机\\webssh\\ssheasy-gogogo\\build.ps1\")"
+      "Bash(del \"C:\\Users\\Administrator\\Desktop\\codingfile\\闲机\\webssh\\ssheasy-gogogo\\build.ps1\")",
+      "Bash(go build:*)",
+      "Bash(del \"C:\\Users\\Administrator\\Desktop\\codingfile\\闲机\\webssh\\ssheasy-gogogo\\QUICK_CONNECT_GUIDE.md\")",
+      "Bash(powershell -Command \"Get-Content ''C:\\Users\\Administrator\\Desktop\\codingfile\\闲机\\webssh\\ssheasy-gogogo\\README.md'' | Select-String -Pattern ''快速连接|文件浏览器|根目录'' | Select-Object -First 10\")"
     ],
     "deny": [],
     "ask": []
