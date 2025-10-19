@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>WebSSH Client</title>
+    <title>网页SSH客户端 - SSHEasy</title>
 
     
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -136,7 +136,7 @@ window.onload = function() {
   }
 
   showServerKey = function(key) {
-    $('#fingerprintMsg').html("RSA key fingerprint is " + key + " <br>Are you sure you want to continue connecting (yes/no)?")
+    $('#fingerprintMsg').html("服务器 RSA 密钥指纹为：" + key + " <br>您确定要继续连接吗？")
     $('#fingerprintModal').modal('show')
   }
 
@@ -215,7 +215,7 @@ window.onload = function() {
       if (webauthnKey != -1) $('#webauthnKeySelect').val(webauthnKey);
 
       if (host && port && doConnect === "true") {
-        showMsg('Connecting...');
+        showMsg('正在连接...');
         $('#conBtn').prop('disabled', true);
         initConnection(
           term.rows,
@@ -231,7 +231,7 @@ window.onload = function() {
         );
       } else {
         if(doConnect == "true") {
-          showErr("Missing required connection parameters in URL.");
+          showErr("URL 中缺少必需的连接参数。");
         }
       }
     }
@@ -250,7 +250,7 @@ window.onload = function() {
     if (show) { // File browser is being shown
       console.log('Attempting to show file browser.');
       fileBrowserRow.removeClass('d-none');
-      toggleBtn.text('Hide File Browser');
+      toggleBtn.text('隐藏文件浏览器');
        // Re-attach the iframe if it was detached
       if (detachedFileBrowserIframe) {
            iframeContainer.append(detachedFileBrowserIframe);
@@ -261,7 +261,7 @@ window.onload = function() {
     } else { // File browser is being hidden
       console.log('Attempting to hide file browser.');
       fileBrowserRow.addClass('d-none');
-      toggleBtn.text('Show File Browser');
+      toggleBtn.text('显示文件浏览器');
       const fileBrowserIframe = $('#fbFrame'); // Get the iframe element
 
       // Detach the iframe from the DOM
@@ -330,7 +330,7 @@ window.onload = function() {
           publicKey: publicKeyCredentialCreationOptions
       }).then(function(creds) {
         var pk = parsePublicKey(JSON.stringify(creds))
-        showMsg('Copy paster the following public key into your servers <i>authorized_keys</i> file: <code>' + pk.sshKey + '</code>')
+        showMsg('请将以下公钥复制到服务器的 <i>authorized_keys</i> 文件中：<code>' + pk.sshKey + '</code>')
         pk.name = name
         pk.type = type
         console.log(pk)
@@ -351,7 +351,7 @@ window.onload = function() {
     listContainer.empty()
     listContainer.append($('<option>', {
         value: -1,
-        text: "Select Webauthn Key"
+        text: "选择 Webauthn 密钥"
     }));
     for(var i = 0, len = itemList.length; i < len; i++) {
       var pk = itemList[i]; 
@@ -365,8 +365,8 @@ window.onload = function() {
         showMsg('') 
         return
       }
-      var pk = itemList[this.value]; 
-      showMsg('Selected public key: <code>' + pk.sshKey + '</code>')
+      var pk = itemList[this.value];
+      showMsg('已选择公钥：<code>' + pk.sshKey + '</code>')
     });
   }
 
@@ -398,7 +398,7 @@ window.onload = function() {
   }
 
   showReconnect = function(errorMsg) {
-    $('#connLostMsg').html("The connection to your server was interrupted: " + errorMsg + "<br>Do you want to reconnect?")
+    $('#connLostMsg').html("与服务器的连接已中断：" + errorMsg + "<br>您要重新连接吗？")
     $('#reconnectModal').modal('show')
   }
 
@@ -495,13 +495,14 @@ window.onload = function() {
     </script>
     <style>
       html {
-        height: 100%;
-        overflow: hidden; /* Prevent scrollbars on html that might affect vh/100% calculations */
+        height: 150%;
+        /* overflow: hidden; Prevent scrollbars on html that might affect vh/100% calculations */
       }
       body {
-        height: 100vh; /* Directly use viewport height for the body */
+        background:linear-gradient(220.55deg, #AFCCCB 0%, #616566 100%);
+        height: 150vh; /* Directly use viewport height for the body */
         margin: 0;
-        overflow: hidden; /* Prevent scrollbars on body */
+        /* overflow: hidden; Prevent scrollbars on body */
         display: flex; /* Make body a flex container */
         flex-direction: column; /* So its direct child can grow to fill it */
       }
@@ -510,7 +511,7 @@ window.onload = function() {
         height: 100%; /* Make this container take 100% of the body's height */
         display: flex;
         flex-direction: column;
-        min-height: 0; /* Still important for flex children within this container */
+        min-height: 100vh; /* Still important for flex children within this container */
       }
       #termContainer {
         flex-grow: 1 !important; /* Allows #termContainer to expand (added !important) */
@@ -580,17 +581,17 @@ li button {
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">Server fingerprint</h5>
+                <h5 class="modal-title">服务器指纹</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="acceptFingerprint(false);">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
               <div id="fingerprintMsg" class="modal-body">
-                
+
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal"   onclick="acceptFingerprint(true);">Yes</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="acceptFingerprint(false);">No</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal"   onclick="acceptFingerprint(true);">是</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="acceptFingerprint(false);">否</button>
               </div>
             </div>
           </div>
@@ -600,18 +601,18 @@ li button {
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">Connection lost</h5>
+                <h5 class="modal-title">连接丢失</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="reconnect(false);">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
               <div id="connLostMsg" class="modal-body">
-                  The connection to your server was interrupted.
-                  Do you want to reconnect?
+                  与服务器的连接已中断。
+                  您要重新连接吗？
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal"   onclick="reconnect(true);">Yes</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="reconnect(false);">No</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal"   onclick="reconnect(true);">是</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="reconnect(false);">否</button>
               </div>
             </div>
           </div>
@@ -621,7 +622,7 @@ li button {
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">Create a Webauthn key</h5>
+                <h5 class="modal-title">创建 Webauthn 密钥</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
@@ -629,24 +630,24 @@ li button {
               <div  class="modal-body">
                 <form>
                 <div class="form-group row">
-                  <label class="col-sm-4 col-form-label"> Name of the key </label>
+                  <label class="col-sm-4 col-form-label"> 密钥名称 </label>
                   <div class="col-sm-8">
-                    <input id="wauthnKeyName" type="text"  class="form-control" title="The name you can use later to select the key">
+                    <input id="wauthnKeyName" type="text"  class="form-control" title="您可以稍后使用此名称选择密钥">
                   </div>
                 </div>
                 <div class="form-group row">
-                  <label class="col-sm-4 col-form-label"> Type of the key </label>
+                  <label class="col-sm-4 col-form-label"> 密钥类型 </label>
                   <div class="col-sm-8">
                   <div class="form-check-inline">
                     <input class="form-check-input" type="radio" name="wauthnKeyType" id="wauthnKeyTypePlatform" value="platform" checked>
-                    <label class="form-check-label" for="wauthnKeyTypePlatform" title="The key is stored and managed by the current browser">
-                      Platform
+                    <label class="form-check-label" for="wauthnKeyTypePlatform" title="密钥由当前浏览器存储和管理">
+                      平台密钥
                     </label>
                   </div>
                   <div class="form-check">
                     <input class="form-check-input" type="radio" name="wauthnKeyType" id="wauthnKeyTypeCrossPlatform " value="cross-platform">
-                    <label class="form-check-label" for="wauthnKeyTypeCrossPlatform" title="The key is stored and managed by an external device, eg. your phone or YubiKey">
-                      Cross-platform
+                    <label class="form-check-label" for="wauthnKeyTypeCrossPlatform" title="密钥由外部设备存储和管理，例如手机或 YubiKey">
+                      跨平台密钥
                     </label>
                   </div>
                   </div>
@@ -654,8 +655,8 @@ li button {
               </form>
               </div>
               <div class="modal-footer">
-                <button id="wauthnKeyCreateBtn" type="button" class="btn btn-primary" data-dismiss="modal"   onclick="createPublicKey($('#wauthnKeyName').val(),$('input[name=\'wauthnKeyType\']:checked').val());">Create</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button id="wauthnKeyCreateBtn" type="button" class="btn btn-primary" data-dismiss="modal"   onclick="createPublicKey($('#wauthnKeyName').val(),$('input[name=\'wauthnKeyType\']:checked').val());">创建</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
               </div>
             </div>
           </div>
@@ -673,35 +674,35 @@ li button {
       <div id="conPan" class="row" >  
         <div  class="container col-8 align-self-center" > 
           <div class="row" >
-            <input id="usrInp" type="text" placeholder="User" class="form-control col-3" value="root">
-            <input id="hostInp" type="text" placeholder="Host to Connect" class="form-control col-5" value="">
-            <input id="portInp" type="number" placeholder="Port" class="form-control col-2" value="22">
+            <input id="usrInp" type="text" placeholder="用户名" class="form-control col-3" value="root">
+            <input id="hostInp" type="text" placeholder="主机地址" class="form-control col-5" value="">
+            <input id="portInp" type="number" placeholder="端口" class="form-control col-2" value="22">
             <div class="col-2">
-              <label title="If checked then connection is not proxied through the websocket proxy of ssheasy, but it goes directly to the provided host and port. On the provided addrees a websocket proxy is expected to listen. Useful if you have your own proxy setup (like websockify or something similar).">
-                <input id="bypassProxyInp" type="checkbox" /> Bypass proxy
+              <label title="如果选中，连接将不通过 ssheasy 的 websocket 代理，而是直接连接到提供的主机和端口。在提供的地址上需要有 websocket 代理监听。如果您有自己的代理设置（如 websockify 等），这会很有用。">
+                <input id="bypassProxyInp" type="checkbox" /> 旁路代理
               </label>
             </div>
           </div>
           <div class="row">
-              <input id="passInp" type="password" placeholder="Password/Passphrase" class="form-control col-3" value="root">
-              <textarea id="pkInp" rows=1 placeholder="Private Key" class="form-control col-5"></textarea>
+              <input id="passInp" type="password" placeholder="密码/密钥口令" class="form-control col-3" value="root">
+              <textarea id="pkInp" rows=1 placeholder="私钥" class="form-control col-5"></textarea>
               <label class="btn btn-link col-2">
-                  Select key file <input id="pkFile" type="file" hidden>
+                  选择密钥文件 <input id="pkFile" type="file" hidden>
               </label>
           </div>
           <div class="row">
             <div class="form-group col-3 nopad">
               <label for="webauthnKeySelect"></label>
               <select class="form-control" id="webauthnKeySelect">
-                <option selected>Select Webauthn Key</option>
+                <option selected>选择 Webauthn 密钥</option>
               </select>
             </div>
-            <button type="button" class="btn btn-link col-3" onclick="showCreatePublicKey();">Create Webauthn Key</button>
+            <button type="button" class="btn btn-link col-3" onclick="showCreatePublicKey();">创建 Webauthn 密钥</button>
             <div class="col-3">
-              <a type="button" class="btn btn-link col-3" href="webauthn.html" target="_blank">Learn more</a>
+              <a type="button" class="btn btn-link col-3" href="webauthn.html" target="_blank">了解更多</a>
             </div>
-            <button id="conBtn" type="button" class="btn btn-primary col-3" 
-              onclick="$('#conBtn').prop('disabled',true);showMsg('Connecting...');initConnection(term.rows, term.cols,$('#hostInp').val(),Number($('#portInp').val()),$('#usrInp').val(),$('#passInp').val(),$('#pkInp').val(), $('#bypassProxyInp').is(':checked'), false, $('#webauthnKeySelect').val() > -1);">Connect</button>
+            <button id="conBtn" type="button" class="btn btn-primary col-3"
+              onclick="$('#conBtn').prop('disabled',true);showMsg('正在连接...');initConnection(term.rows, term.cols,$('#hostInp').val(),Number($('#portInp').val()),$('#usrInp').val(),$('#passInp').val(),$('#pkInp').val(), $('#bypassProxyInp').is(':checked'), false, $('#webauthnKeySelect').val() > -1);">连接</button>
           </div>   
         </div>
         <div class="col-3">
@@ -721,15 +722,15 @@ li button {
           <div class="row">
             <div id="conInf" class="col-3 align-self-center" >
             </div>
-                <input id="searchTxt" type="text" placeholder="Find" class="form-control col-md-3" >
+                <input id="searchTxt" type="text" placeholder="查找" class="form-control col-md-3" >
                 <div class="col-md-1" style="padding-left: 20pt;padding-top: 7px;">
-                  <label class="form-check-label"> <input type="checkbox" class="form-check-input" id="matchCaseChb" >Match Case</label>
+                  <label class="form-check-label"> <input type="checkbox" class="form-check-input" id="matchCaseChb" >区分大小写</label>
                 </div>
-                <button type="button" class="btn btn-link col-md-1" onclick="searchAddon.findNext($('#searchTxt').val(),{caseSensitive:  $('#matchCaseChb').prop('checked')})">Find Next</button>
-                <button type="button" class="btn btn-link col-md-1" onclick="searchAddon.findPrevious($('#searchTxt').val(),{caseSensitive:  $('#matchCaseChb').prop('checked')})">Find Previous</button>
-                <button type="button" class="btn btn-link col-md-1" onclick="toggleFullScreen();">Toggle Fullscreen</button>
-                <button id="toggleFileBrowserBtn" type="button" class="btn btn-link col-md-1">Show File Browser</button>
-                <button type="button" class="btn btn-link col-md-1" onclick="downloadHistory('ssheasy.txt');" title="Download the history of your terminal session">Download</button>
+                <button type="button" class="btn btn-link col-md-1" onclick="searchAddon.findNext($('#searchTxt').val(),{caseSensitive:  $('#matchCaseChb').prop('checked')})">查找下一个</button>
+                <button type="button" class="btn btn-link col-md-1" onclick="searchAddon.findPrevious($('#searchTxt').val(),{caseSensitive:  $('#matchCaseChb').prop('checked')})">查找上一个</button>
+                <button type="button" class="btn btn-link col-md-1" onclick="toggleFullScreen();">切换全屏</button>
+                <button id="toggleFileBrowserBtn" type="button" class="btn btn-link col-md-1">显示文件浏览器</button>
+                <button type="button" class="btn btn-link col-md-1" onclick="downloadHistory('ssheasy.txt');" title="下载您的终端会话历史">下载</button>
           </div>
         </div>
 
@@ -762,37 +763,40 @@ li button {
         term.loadAddon(serializeAddon);
         term.open(document.getElementById('terminal'));
         fitAddon.fit();
-        term.write('SSH to your machine from anywhere with the SSH client running directly in your browser.');
+        term.write('从任何地方通过浏览器直接运行的 SSH 客户端连接到您的服务器。');
         term.write('\n\n\r');
-        term.write('WebSSH is SSH/SFTP client built on golang\'s SSH and SFTP library, compiled to Web Assembly to allow you to connect to your machine directly from your browser.');
+        term.write('WebSSH 是基于 Golang 的 SSH 和 SFTP 库构建的 SSH/SFTP 客户端，编译为 WebAssembly，让您可以直接从浏览器连接到您的服务器。');
         term.write('\n\r');
-        term.write('No credentials or other plain text information is shared with our servers. Our servers only tunneling the packets from your browser to the machine you connect.');
-        term.write('They see only the same information that is visible for any router or other computer on the network when you use OpenSSH or other command line client.');
-        term.write('\n\r');
-        term.write('\n\r');
-        term.write('Just fill out the connection information and click connect to initiate the SSH session, once the remote hosts answers a pop up will show you the fingerprint of the server key and you can decide whether you want to continue with the connection.');
-        term.write('After successfully connecting you can just type your command into this Xterm.js console or browse/manage your files in the filemanager opens below the console.');
+        term.write('您的凭证或其他明文信息不会与我们的服务器共享。我们的服务器只负责在浏览器和目标服务器之间隧道传输数据包。');
+        term.write('它们只能看到与您使用 OpenSSH 或其他命令行客户端时，网络中的任何路由器或其他计算机能看到的相同信息。');
         term.write('\n\r');
         term.write('\n\r');
-        term.write('Source code available on github: https://github.com/cniu6/ssheasy-gogogo');
+        term.write('只需填写连接信息并点击连接按钮即可启动 SSH 会话。当远程主机响应时，会弹出窗口显示服务器密钥的指纹，您可以决定是否继续连接。');
+        term.write('成功连接后，您可以在这个 Xterm.js 控制台中输入命令，或在控制台下方打开的文件管理器中浏览/管理您的文件。');
+        term.write('\n\r');
+        term.write('\n\r');
+        term.write('源代码托管在 GitHub：https://github.com/cniu6/ssheasy-gogogo');
         term.write('\n\r');
         fitAddon.fit();
         const resizeObserver = new ResizeObserver((entries) => {
           fitAddon.fit();
-          changeWindowSize(term.rows, term.cols);
-          console.log("Size changed",term.rows, term.cols);
+          // 只有在 WASM 已加载并且连接已建立时才调用 changeWindowSize
+          if (typeof changeWindowSize !== 'undefined') {
+            changeWindowSize(term.rows, term.cols);
+            console.log("Size changed",term.rows, term.cols);
+          }
         });
         resizeObserver.observe(document.getElementById('terminal'));
       }
       initXTerm();
     </script>
     <noscript>
-        SSH to your machine from anywhere with the SSH client running directly in your browser.
-        WebSSH is SSH/SFTP client built on golang\'s SSH and SFTP library, compiled to Web Assembly to allow you to connect to your machine directly from your browser.
-        No credentials or other plain text information is shared with our servers. Our servers only tunneling the packets from your browser to the machine you connect.
-        They see only the same information that is visible for any router or other computer on the network when you use OpenSSH or other command line client.
-        Just fill out the connection information and click connect to initiate the SSH session, once the remote hosts answers a pop up will show you the fingerprint of the server key and you can decide whether you want to continue with the connection.
-        After successfully connecting you can just type your command into this Xterm.js console or browse/manage your files in the filemanager opens below the console.
+        从任何地方通过浏览器直接运行的 SSH 客户端连接到您的服务器。
+        WebSSH 是基于 Golang 的 SSH 和 SFTP 库构建的 SSH/SFTP 客户端，编译为 WebAssembly，让您可以直接从浏览器连接到您的服务器。
+        您的凭证或其他明文信息不会与我们的服务器共享。我们的服务器只负责在浏览器和目标服务器之间隧道传输数据包。
+        它们只能看到与您使用 OpenSSH 或其他命令行客户端时，网络中的任何路由器或其他计算机能看到的相同信息。
+        只需填写连接信息并点击连接按钮即可启动 SSH 会话。当远程主机响应时，会弹出窗口显示服务器密钥的指纹，您可以决定是否继续连接。
+        成功连接后，您可以在这个 Xterm.js 控制台中输入命令，或在控制台下方打开的文件管理器中浏览/管理您的文件。
     </noscript>
   </body>
 </html>
